@@ -148,9 +148,10 @@ class _DeltaVisitor implements ast.NodeVisitor {
     if (_embedTags.firstMatch(element.tag) != null) {
       // We write out the element here since the embed has no children or
       // content.
-      if (element.tag == Tags.img.value) delta.insert('\n\n');
       delta.insert(attr!.toJson());
-      if (element.tag == Tags.img.value) delta.insert('\n\n');
+      if (element.tag == Tags.img.value) {
+        delta.insert('\n\n');
+      }
     } else if (_blockTags.firstMatch(element.tag) == null && attr != null) {
       activeInlineAttributes.addLast(attr);
     }
@@ -268,5 +269,5 @@ class MentionAttribute extends Attribute<String?> {
 }
 
 class DividerAttribute extends Attribute<String?> {
-  DividerAttribute() : super('divider', AttributeScope.EMBEDS, 'hr');
+  DividerAttribute() : super(Tags.divider.value, AttributeScope.EMBEDS, 'hr');
 }

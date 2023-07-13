@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:collection/collection.dart' show IterableExtension;
+import 'package:delta_markdown/src/tags.dart';
 import 'package:flutter_quill/flutter_quill.dart'
     show Attribute, AttributeScope, BlockEmbed, Delta, DeltaIterator, Style;
 
@@ -153,13 +154,12 @@ class DeltaMarkdownEncoder extends Converter<String, String> {
   void _handleEmbed(Map<String, dynamic> data) {
     final embed = BlockEmbed(data.keys.first, data.values.first as String);
 
-    if (embed.type == 'image') {
+    if (embed.type == 'divider') {
       _writeEmbedTag(lineBuffer, embed);
       _writeEmbedTag(lineBuffer, embed, close: true);
-    } else if (embed.type == 'divider') {
-      _writeEmbedTag(lineBuffer, embed);
-      _writeEmbedTag(lineBuffer, embed, close: true);
+      return;
     }
+    _writeEmbedTag(lineBuffer, embed);
   }
 
   void _handleBlock(Attribute? blockStyle) {
@@ -254,17 +254,16 @@ class DeltaMarkdownEncoder extends Converter<String, String> {
     BlockEmbed embed, {
     bool close = false,
   }) {
-    const kImageType = 'image';
-    const kDividerType = 'divider';
-
-    if (embed.type == kImageType) {
-      if (close) {
-        buffer.write('](${embed.data})');
-      } else {
-        buffer.write('![');
-      }
-    } else if (embed.type == kDividerType && close) {
+    if (_isDivider(embed.type) && close) {
       buffer.write('\n---\n\n');
+      return;
+    }
+    if (Tags.values.any((e) => e.value == embed.type && !_isDivider(e.value))) {
+      buffer.write('${embed.data}');
+      return;
     }
   }
+
+  bool _isDivider(String type) => type == Tags.divider.value;
+
 }
