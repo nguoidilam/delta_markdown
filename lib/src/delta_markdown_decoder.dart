@@ -2,8 +2,8 @@ import 'dart:collection';
 import 'dart:convert';
 
 import 'package:delta_markdown/src/tags.dart';
-import 'package:flutter_quill/models/documents/attribute.dart';
-import 'package:flutter_quill/models/quill_delta.dart';
+import 'package:flutter_quill/flutter_quill.dart'
+    show Attribute, AttributeScope, Delta, LinkAttribute;
 
 import 'ast.dart' as ast;
 import 'document.dart';
