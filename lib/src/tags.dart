@@ -2,7 +2,8 @@ enum Tags {
 
   mention('mention'),
   img('img'),
-  file('file');
+  file('file'),
+  divider('divider');
 
   const Tags(this.value);
 
