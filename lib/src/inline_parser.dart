@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:charcode/charcode.dart';
+import 'package:delta_markdown/src/regexs.dart';
 
 import 'ast.dart';
 import 'document.dart';
@@ -47,6 +48,9 @@ class InlineParser {
     LineBreakSyntax(),
     LinkSyntax(),
     ImageSyntax(),
+    ImageCustomerSyntax(),
+    FileSyntax(),
+    MentionSyntax(),
     // Allow any punctuation to be escaped.
     EscapeSyntax(),
     // "*" surrounded by spaces is left alone.
@@ -1268,4 +1272,47 @@ class InlineLink {
 
   final String destination;
   final String? title;
+}
+
+class ImageCustomerSyntax extends InlineSyntax {
+  /// Create a new instance.
+  ImageCustomerSyntax({String? sub}): substitute = sub, super(RegexValue.regexImage);
+
+  final String? substitute;
+
+  @override
+  bool onMatch(InlineParser parser, Match match) {
+    final Element el = Element.withTag('img');
+    el.attributes['value'] = match.group(0) ?? '';
+    parser.addNode(el);
+    return true;
+  }
+}
+
+class MentionSyntax extends InlineSyntax {
+  /// Create a new instance.
+  MentionSyntax({String? sub}): substitute = sub, super(RegexValue.regexMention);
+
+  final String? substitute;
+
+  @override
+  bool onMatch(InlineParser parser, Match match) {
+    final Element el = Element.withTag('mention');
+    el.attributes['value'] = match.group(0)??'';
+    parser.addNode(el);
+    return true;
+  }
+}
+
+class FileSyntax extends InlineSyntax {
+  /// Create a new instance.
+  FileSyntax() : super(RegexValue.regexFile);
+
+  @override
+  bool onMatch(InlineParser parser, Match match) {
+    final Element el = Element.withTag('file');
+    el.attributes['value'] = match.group(0) ?? '';
+    parser.addNode(el);
+    return true;
+  }
 }

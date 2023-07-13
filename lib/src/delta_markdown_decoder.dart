@@ -1,6 +1,7 @@
 import 'dart:collection';
 import 'dart:convert';
 
+import 'package:delta_markdown/src/tags.dart';
 import 'package:flutter_quill/models/documents/attribute.dart';
 import 'package:flutter_quill/models/quill_delta.dart';
 
@@ -22,7 +23,7 @@ class _DeltaVisitor implements ast.NodeVisitor {
   static final _blockTags =
       RegExp('h1|h2|h3|h4|h5|h6|hr|pre|ul|ol|blockquote|p|pre');
 
-  static final _embedTags = RegExp('hr|img');
+  static final _embedTags = RegExp('hr|img|file|mention');
 
   late Delta delta;
 
@@ -147,7 +148,9 @@ class _DeltaVisitor implements ast.NodeVisitor {
     if (_embedTags.firstMatch(element.tag) != null) {
       // We write out the element here since the embed has no children or
       // content.
+      if (element.tag == Tags.img.value) delta.insert('\n\n');
       delta.insert(attr!.toJson());
+      if (element.tag == Tags.img.value) delta.insert('\n\n');
     } else if (_blockTags.firstMatch(element.tag) == null && attr != null) {
       activeInlineAttributes.addLast(attr);
     }
@@ -236,8 +239,14 @@ class _DeltaVisitor implements ast.NodeVisitor {
         final href = el.attributes['href'];
         return LinkAttribute(href);
       case 'img':
-        final href = el.attributes['src'];
+        final href = el.attributes['value'];
         return ImageAttribute(href);
+      case 'file':
+        final href = el.attributes['value'];
+        return FileAttribute(href);
+      case 'mention':
+        final href = el.attributes['value'];
+        return MentionAttribute(href);
       case 'hr':
         return DividerAttribute();
     }
@@ -247,7 +256,15 @@ class _DeltaVisitor implements ast.NodeVisitor {
 }
 
 class ImageAttribute extends Attribute<String?> {
-  ImageAttribute(String? val) : super('image', AttributeScope.EMBEDS, val);
+  ImageAttribute(String? val) : super(Tags.img.value, AttributeScope.EMBEDS, val);
+}
+
+class FileAttribute extends Attribute<String?> {
+  FileAttribute(String? val) : super(Tags.file.value, AttributeScope.EMBEDS, val);
+}
+
+class MentionAttribute extends Attribute<String?> {
+  MentionAttribute(String? val) : super(Tags.mention.value, AttributeScope.EMBEDS, val);
 }
 
 class DividerAttribute extends Attribute<String?> {
