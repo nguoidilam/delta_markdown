@@ -23,7 +23,7 @@ class _DeltaVisitor implements ast.NodeVisitor {
   static final _blockTags =
       RegExp('h1|h2|h3|h4|h5|h6|hr|pre|ul|ol|blockquote|p|pre');
 
-  static final _embedTags = RegExp('hr|img|file|mention');
+  static final _embedTags = RegExp('hr|img|file|mention|mention_all');
 
   late Delta delta;
 
@@ -248,6 +248,9 @@ class _DeltaVisitor implements ast.NodeVisitor {
       case 'mention':
         final href = el.attributes['value'];
         return MentionAttribute(href);
+      case 'mention_all':
+        final href = el.attributes['value'];
+        return MentionAllAttribute(href);
       case 'hr':
         return DividerAttribute();
     }
@@ -266,6 +269,10 @@ class FileAttribute extends Attribute<String?> {
 
 class MentionAttribute extends Attribute<String?> {
   MentionAttribute(String? val) : super(Tags.mention.value, AttributeScope.EMBEDS, val);
+}
+
+class MentionAllAttribute extends Attribute<String?> {
+  MentionAllAttribute(String? val) : super(Tags.mentionAll.value, AttributeScope.EMBEDS, val);
 }
 
 class DividerAttribute extends Attribute<String?> {

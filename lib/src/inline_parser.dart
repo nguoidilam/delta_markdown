@@ -51,6 +51,7 @@ class InlineParser {
     ImageCustomerSyntax(),
     FileSyntax(),
     MentionSyntax(),
+    MentionAllSyntax(),
     // Allow any punctuation to be escaped.
     EscapeSyntax(),
     // "*" surrounded by spaces is left alone.
@@ -1298,6 +1299,24 @@ class MentionSyntax extends InlineSyntax {
   @override
   bool onMatch(InlineParser parser, Match match) {
     final Element el = Element.withTag('mention');
+    el.attributes['value'] = match.group(0)??'';
+    parser.addNode(el);
+    return true;
+  }
+}
+
+
+class MentionAllSyntax extends InlineSyntax {
+  /// Create a new instance.
+  MentionAllSyntax({String? sub})
+      : substitute = sub,
+        super(RegexValue.regexMentionAll);
+
+  final String? substitute;
+
+  @override
+  bool onMatch(InlineParser parser, Match match) {
+    final Element el = Element.withTag('mention_all');
     el.attributes['value'] = match.group(0)??'';
     parser.addNode(el);
     return true;
