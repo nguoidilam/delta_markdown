@@ -17,8 +17,8 @@ class InlineParser {
     // User specified syntaxes are the first syntaxes to be evaluated.
     syntaxes.addAll(document.inlineSyntaxes);
 
-    final documentHasCustomInlineSyntaxes = document.inlineSyntaxes
-        .any((s) => !document.extensionSet.inlineSyntaxes.contains(s));
+    final documentHasCustomInlineSyntaxes =
+        document.inlineSyntaxes.any((s) => !document.extensionSet.inlineSyntaxes.contains(s));
 
     // This first RegExp matches plain text to accelerate parsing. It's written
     // so that it does not match any prefix of any following syntaxes. Most
@@ -35,14 +35,11 @@ class InlineParser {
     syntaxes
       ..addAll(_defaultSyntaxes)
       // Custom link resolvers go after the generic text syntax.
-      ..insertAll(1, [
-        LinkSyntax(linkResolver: document.linkResolver),
-        ImageSyntax(linkResolver: document.imageLinkResolver)
-      ]);
+      ..insertAll(
+          1, [LinkSyntax(linkResolver: document.linkResolver), ImageSyntax(linkResolver: document.imageLinkResolver)]);
   }
 
-  static final List<InlineSyntax> _defaultSyntaxes =
-      List<InlineSyntax>.unmodifiable(<InlineSyntax>[
+  static final List<InlineSyntax> _defaultSyntaxes = List<InlineSyntax>.unmodifiable(<InlineSyntax>[
     EmailAutolinkSyntax(),
     AutolinkSyntax(),
     LineBreakSyntax(),
@@ -51,6 +48,7 @@ class InlineParser {
     ImageCustomerSyntax(),
     FileSyntax(),
     MentionSyntax(),
+    MentionAllSyntax(),
     // Allow any punctuation to be escaped.
     EscapeSyntax(),
     // "*" surrounded by spaces is left alone.
@@ -88,8 +86,7 @@ class InlineParser {
     while (!isDone) {
       // See if any of the current tags on the stack match.  This takes
       // priority over other possible matches.
-      if (_stack.reversed
-          .any((state) => state.syntax != null && state.tryMatch(this))) {
+      if (_stack.reversed.any((state) => state.syntax != null && state.tryMatch(this))) {
         continue;
       }
 
@@ -249,8 +246,7 @@ class InlineHtmlSyntax extends TextSyntax {
 class EmailAutolinkSyntax extends InlineSyntax {
   EmailAutolinkSyntax() : super('<($_email)>');
 
-  static const _email =
-      r'''[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}'''
+  static const _email = r'''[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}'''
       r'''[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*''';
 
   @override
@@ -303,8 +299,7 @@ class AutolinkExtensionSyntax extends InlineSyntax {
   // be considered part of the autolink
   static const truncatingPunctuationPositive = r'[?!.,:*_~]';
 
-  static final regExpTrailingPunc =
-      RegExp('$truncatingPunctuationPositive*' r'$');
+  static final regExpTrailingPunc = RegExp('$truncatingPunctuationPositive*' r'$');
   static final regExpEndsWithColon = RegExp(r'\&[a-zA-Z0-9]+;$');
   static final regExpWhiteSpace = RegExp(r'\s');
 
@@ -376,9 +371,7 @@ class AutolinkExtensionSyntax extends InlineSyntax {
     }
 
     // The scheme http will be inserted automatically
-    if (!href.startsWith('http://') &&
-        !href.startsWith('https://') &&
-        !href.startsWith('ftp://')) {
+    if (!href.startsWith('http://') && !href.startsWith('https://') && !href.startsWith('ftp://')) {
       href = 'http://$href';
     }
 
@@ -424,12 +417,8 @@ class _DelimiterRun {
   final bool? isFollowedByPunctuation;
 
   // ignore: prefer_constructors_over_static_methods
-  static _DelimiterRun? tryParse(
-      InlineParser parser, int runStart, int runEnd) {
-    bool leftFlanking,
-        rightFlanking,
-        precededByPunctuation,
-        followedByPunctuation;
+  static _DelimiterRun? tryParse(InlineParser parser, int runStart, int runEnd) {
+    bool leftFlanking, rightFlanking, precededByPunctuation, followedByPunctuation;
     String preceding, following;
     if (runStart == 0) {
       rightFlanking = false;
@@ -451,18 +440,14 @@ class _DelimiterRun {
     if (whitespace.contains(following)) {
       leftFlanking = false;
     } else {
-      leftFlanking = !followedByPunctuation ||
-          whitespace.contains(preceding) ||
-          precededByPunctuation;
+      leftFlanking = !followedByPunctuation || whitespace.contains(preceding) || precededByPunctuation;
     }
 
     // http://spec.commonmark.org/0.28/#right-flanking-delimiter-run
     if (whitespace.contains(preceding)) {
       rightFlanking = false;
     } else {
-      rightFlanking = !precededByPunctuation ||
-          whitespace.contains(following) ||
-          followedByPunctuation;
+      rightFlanking = !precededByPunctuation || whitespace.contains(following) || followedByPunctuation;
     }
 
     if (!leftFlanking && !rightFlanking) {
@@ -480,19 +465,14 @@ class _DelimiterRun {
   }
 
   @override
-  String toString() =>
-      '<char: $char, length: $length, isLeftFlanking: $isLeftFlanking, '
+  String toString() => '<char: $char, length: $length, isLeftFlanking: $isLeftFlanking, '
       'isRightFlanking: $isRightFlanking>';
 
   // Whether a delimiter in this run can open emphasis or strong emphasis.
-  bool get canOpen =>
-      isLeftFlanking! &&
-      (char == $asterisk || !isRightFlanking! || isPrecededByPunctuation!);
+  bool get canOpen => isLeftFlanking! && (char == $asterisk || !isRightFlanking! || isPrecededByPunctuation!);
 
   // Whether a delimiter in this run can close emphasis or strong emphasis.
-  bool get canClose =>
-      isRightFlanking! &&
-      (char == $asterisk || !isLeftFlanking! || isFollowedByPunctuation!);
+  bool get canClose => isRightFlanking! && (char == $asterisk || !isLeftFlanking! || isFollowedByPunctuation!);
 }
 
 /// Matches syntax that has a pair of tags and becomes an element, like `*` for
@@ -546,8 +526,7 @@ class TagSyntax extends InlineSyntax {
         ..start = parser.pos;
     } else if (openingRunLength > 1 && runLength == 1) {
       parser
-        ..openTag(
-            TagState(state.startPos, state.endPos - 1, this, delimiterRun))
+        ..openTag(TagState(state.startPos, state.endPos - 1, this, delimiterRun))
         ..addNode(Element('em', state.children));
     } else if (openingRunLength == 2 && runLength == 2) {
       parser.addNode(Element('strong', state.children));
@@ -558,13 +537,11 @@ class TagSyntax extends InlineSyntax {
         ..start = parser.pos;
     } else if (openingRunLength > 2 && runLength == 2) {
       parser
-        ..openTag(
-            TagState(state.startPos, state.endPos - 2, this, delimiterRun))
+        ..openTag(TagState(state.startPos, state.endPos - 2, this, delimiterRun))
         ..addNode(Element('strong', state.children));
     } else if (openingRunLength > 2 && runLength > 2) {
       parser
-        ..openTag(
-            TagState(state.startPos, state.endPos - 2, this, delimiterRun))
+        ..openTag(TagState(state.startPos, state.endPos - 2, this, delimiterRun))
         ..addNode(Element('strong', state.children))
         ..pos = parser.pos - (runLength - 2)
         ..start = parser.pos;
@@ -673,8 +650,7 @@ class LinkSyntax extends TagSyntax {
       parser.advanceBy(1);
       // At this point, we've matched `[...][`. Maybe a *full* reference link,
       // like `[foo][bar]` or a *collapsed* reference link, like `[foo][]`.
-      if (parser.pos + 1 < parser.source.length &&
-          parser.charAt(parser.pos + 1) == $rbracket) {
+      if (parser.pos + 1 < parser.source.length && parser.charAt(parser.pos + 1) == $rbracket) {
         // That opening `[` is not actually part of the link. Maybe a
         // *shortcut* reference link (followed by a `[`).
         parser.advanceBy(1);
@@ -703,8 +679,7 @@ class LinkSyntax extends TagSyntax {
   /// Otherwise, returns `null`.
   ///
   /// [label] does not need to be normalized.
-  Node? _resolveReferenceLink(
-      String label, TagState state, Map<String, LinkReference> linkReferences) {
+  Node? _resolveReferenceLink(String label, TagState state, Map<String, LinkReference> linkReferences) {
     final normalizedLabel = label.toLowerCase();
     final linkReference = linkReferences[normalizedLabel];
     if (linkReference != null) {
@@ -718,10 +693,7 @@ class LinkSyntax extends TagSyntax {
       // Normally, label text does not get parsed as inline Markdown. However,
       // for the benefit of the link resolver, we need to at least escape
       // brackets, so that, e.g. a link resolver can receive `[\[\]]` as `[]`.
-      return linkResolver(label
-          .replaceAll(r'\\', r'\')
-          .replaceAll(r'\[', '[')
-          .replaceAll(r'\]', ']'));
+      return linkResolver(label.replaceAll(r'\\', r'\').replaceAll(r'\[', '[').replaceAll(r'\]', ']'));
     }
   }
 
@@ -739,8 +711,7 @@ class LinkSyntax extends TagSyntax {
   //
   // Returns whether the link was added successfully.
   bool _tryAddReferenceLink(InlineParser parser, TagState state, String label) {
-    final element =
-        _resolveReferenceLink(label, state, parser.document.linkReferences);
+    final element = _resolveReferenceLink(label, state, parser.document.linkReferences);
     if (element == null) {
       return false;
     }
@@ -975,12 +946,7 @@ class LinkSyntax extends TagSyntax {
   void _moveThroughWhitespace(InlineParser parser) {
     while (true) {
       final char = parser.charAt(parser.pos);
-      if (char != $space &&
-          char != $tab &&
-          char != $lf &&
-          char != $vt &&
-          char != $cr &&
-          char != $ff) {
+      if (char != $space && char != $tab && char != $lf && char != $vt && char != $cr && char != $ff) {
         return;
       }
       parser.advanceBy(1);
@@ -1001,9 +967,7 @@ class LinkSyntax extends TagSyntax {
 
     // The whitespace should be followed by a title delimiter.
     final delimiter = parser.charAt(parser.pos);
-    if (delimiter != $apostrophe &&
-        delimiter != $quote &&
-        delimiter != $lparen) {
+    if (delimiter != $apostrophe && delimiter != $quote && delimiter != $lparen) {
       return null;
     }
 
@@ -1052,8 +1016,7 @@ class LinkSyntax extends TagSyntax {
 /// Matches images like `![alternate text](url "optional title")` and
 /// `![alternate text][label]`.
 class ImageSyntax extends LinkSyntax {
-  ImageSyntax({Resolver? linkResolver})
-      : super(linkResolver: linkResolver, pattern: r'!\[');
+  ImageSyntax({Resolver? linkResolver}) : super(linkResolver: linkResolver, pattern: r'!\[');
 
   @override
   Node _createNode(TagState state, String destination, String? title) {
@@ -1074,8 +1037,7 @@ class ImageSyntax extends LinkSyntax {
   // Returns whether the image was added successfully.
   @override
   bool _tryAddReferenceLink(InlineParser parser, TagState state, String label) {
-    final element =
-        _resolveReferenceLink(label, state, parser.document.linkReferences);
+    final element = _resolveReferenceLink(label, state, parser.document.linkReferences);
     if (element == null) {
       return false;
     }
@@ -1159,8 +1121,7 @@ class EmojiSyntax extends InlineSyntax {
 ///
 /// The parser maintains a stack of these so it can handle nested tags.
 class TagState {
-  TagState(this.startPos, this.endPos, this.syntax, this.openingDelimiterRun)
-      : children = <Node>[];
+  TagState(this.startPos, this.endPos, this.syntax, this.openingDelimiterRun) : children = <Node>[];
 
   /// The point in the original source where this tag started.
   final int startPos;
@@ -1179,8 +1140,7 @@ class TagState {
   /// Attempts to close this tag by matching the current text against its end
   /// pattern.
   bool tryMatch(InlineParser parser) {
-    final endMatch =
-        syntax!.endPattern.matchAsPrefix(parser.source, parser.pos);
+    final endMatch = syntax!.endPattern.matchAsPrefix(parser.source, parser.pos);
     if (endMatch == null) {
       return false;
     }
@@ -1196,15 +1156,12 @@ class TagState {
     final openingRunLength = endPos - startPos;
     final closingMatchStart = parser.pos;
     final closingMatchEnd = parser.pos + runLength - 1;
-    final closingDelimiterRun =
-        _DelimiterRun.tryParse(parser, closingMatchStart, closingMatchEnd);
+    final closingDelimiterRun = _DelimiterRun.tryParse(parser, closingMatchStart, closingMatchEnd);
     if (closingDelimiterRun != null && closingDelimiterRun.canClose) {
       // Emphasis rules #9 and #10:
-      final oneRunOpensAndCloses =
-          (openingDelimiterRun!.canOpen && openingDelimiterRun!.canClose) ||
-              (closingDelimiterRun.canOpen && closingDelimiterRun.canClose);
-      if (oneRunOpensAndCloses &&
-          (openingRunLength + closingDelimiterRun.length!) % 3 == 0) {
+      final oneRunOpensAndCloses = (openingDelimiterRun!.canOpen && openingDelimiterRun!.canClose) ||
+          (closingDelimiterRun.canOpen && closingDelimiterRun.canClose);
+      if (oneRunOpensAndCloses && (openingRunLength + closingDelimiterRun.length!) % 3 == 0) {
         return false;
       }
       // Close the tag.
@@ -1276,7 +1233,9 @@ class InlineLink {
 
 class ImageCustomerSyntax extends InlineSyntax {
   /// Create a new instance.
-  ImageCustomerSyntax({String? sub}): substitute = sub, super(RegexValue.regexImage);
+  ImageCustomerSyntax({String? sub})
+      : substitute = sub,
+        super(RegexValue.regexImage);
 
   final String? substitute;
 
@@ -1291,14 +1250,34 @@ class ImageCustomerSyntax extends InlineSyntax {
 
 class MentionSyntax extends InlineSyntax {
   /// Create a new instance.
-  MentionSyntax({String? sub}): substitute = sub, super(RegexValue.regexMention);
+  MentionSyntax({String? sub})
+      : substitute = sub,
+        super(RegexValue.regexMention);
 
   final String? substitute;
 
   @override
   bool onMatch(InlineParser parser, Match match) {
     final Element el = Element.withTag('mention');
-    el.attributes['value'] = match.group(0)??'';
+    el.attributes['value'] = match.group(0) ?? '';
+    parser.addNode(el);
+    return true;
+  }
+}
+
+class MentionAllSyntax extends InlineSyntax {
+  /// Create a new instance.
+  MentionAllSyntax({String? sub})
+      : substitute = sub,
+        super(RegexValue.regexMentionAll);
+
+  final String? substitute;
+
+  @override
+  bool onMatch(InlineParser parser, Match match) {
+    final Element el = Element.withTag('mention_all');
+    el.attributes['name'] = match.group(2) ?? '';
+    el.attributes['input'] = parser.source;
     parser.addNode(el);
     return true;
   }
