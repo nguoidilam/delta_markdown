@@ -3,7 +3,8 @@ enum Tags {
   mention('mention'),
   img('img'),
   file('file'),
-  divider('divider');
+  divider('divider'),
+  mentionAll('mention_all');
 
   const Tags(this.value);
 
