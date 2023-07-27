@@ -52,6 +52,7 @@ class InlineParser {
     FileSyntax(),
     MentionSyntax(),
     MentionAllSyntax(),
+    UnderlineSyntax(),
     // Allow any punctuation to be escaped.
     EscapeSyntax(),
     // "*" surrounded by spaces is left alone.
@@ -590,6 +591,24 @@ class StrikethroughSyntax extends TagSyntax {
     }
 
     parser.addNode(Element('del', state.children));
+    return true;
+  }
+}
+
+class UnderlineSyntax extends TagSyntax {
+  UnderlineSyntax() : super(r'\++', requiresDelimiterRun: true);
+
+  @override
+  bool onMatchEnd(InlineParser parser, Match match, TagState state) {
+    final runLength = match.group(0)!.length;
+    final matchStart = parser.pos;
+    final matchEnd = parser.pos + runLength - 1;
+    final delimiterRun = _DelimiterRun.tryParse(parser, matchStart, matchEnd)!;
+    if (!delimiterRun.isRightFlanking!) {
+      return false;
+    }
+
+    parser.addNode(Element('u', state.children));
     return true;
   }
 }
