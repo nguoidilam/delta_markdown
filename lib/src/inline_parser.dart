@@ -53,6 +53,7 @@ class InlineParser {
     MentionSyntax(),
     MentionAllSyntax(),
     UnderlineSyntax(),
+    AutolinkExtensionSyntax(),
     // Allow any punctuation to be escaped.
     EscapeSyntax(),
     // "*" surrounded by spaces is left alone.
