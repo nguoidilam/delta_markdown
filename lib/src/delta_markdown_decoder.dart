@@ -282,5 +282,5 @@ class DividerAttribute extends Attribute<String?> {
 
 class EmbedLinkAttribute extends Attribute<String?> {
   EmbedLinkAttribute(String? val)
-      : super(Tags.embedLink.value, AttributeScope.EMBEDS, val);
+      : super(Tags.embedLink.value, AttributeScope.embeds, val);
 }
