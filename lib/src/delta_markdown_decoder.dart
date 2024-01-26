@@ -250,7 +250,7 @@ class _DeltaVisitor implements ast.NodeVisitor {
         final href = el.attributes['value'];
         return MentionAllAttribute(href);
       case 'embed_link':
-        final href = el.attributes['embed_link'];
+        final href = el.attributes['name'];
         return EmbedLinkAttribute(href);
       case 'hr':
         return DividerAttribute();
