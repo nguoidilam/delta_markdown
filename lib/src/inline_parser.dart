@@ -52,6 +52,7 @@ class InlineParser {
     FileSyntax(),
     MentionSyntax(),
     MentionAllSyntax(),
+    MarkdownLinkSyntax(),
     UnderlineSyntax(),
     AutolinkExtensionSyntax(),
     // Allow any punctuation to be escaped.
@@ -1353,5 +1354,32 @@ class FileSyntax extends InlineSyntax {
     el.attributes['value'] = match.group(0) ?? '';
     parser.addNode(el);
     return true;
+  }
+}
+
+class MarkdownLinkSyntax extends InlineSyntax {
+  MarkdownLinkSyntax()
+      : super(RegexValue.regexMarkdownLink);
+
+  @override
+  bool onMatch(InlineParser parser, Match match) {
+    final el = Element.withTag('markdown_link');
+    final name = _tryDecodeInput(match.group(1) ?? '');
+    final link = _tryDecodeInput(match.group(2) ?? '');
+
+    el.attributes['name'] = name.isEmpty ? link : name;
+    el.attributes['link'] = link;
+    el.attributes['input'] = parser.source;
+    el.attributes['match'] = match.group(0) ?? '';
+    parser.addNode(el);
+    return true;
+  }
+
+  String _tryDecodeInput(String input) {
+    try {
+      return Uri.decodeComponent(input);
+    }  catch (e) {
+      return input;
+    }
   }
 }

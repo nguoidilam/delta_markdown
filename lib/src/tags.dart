@@ -4,7 +4,8 @@ enum Tags {
   img('img'),
   file('file'),
   divider('divider'),
-  mentionAll('mention_all');
+  mentionAll('mention_all'),
+  markdownLink('markdown_link');
 
   const Tags(this.value);
 
