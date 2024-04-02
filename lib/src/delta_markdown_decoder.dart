@@ -21,7 +21,7 @@ class DeltaMarkdownDecoder extends Converter<String, String> {
 class _DeltaVisitor implements ast.NodeVisitor {
   static final _blockTags = RegExp('h1|h2|h3|h4|h5|h6|hr|pre|ul|ol|blockquote|p|pre');
 
-  static final _embedTags = RegExp('hr|img|file|mention|mention_all|embed_link');
+  static final _embedTags = RegExp('hr|img|file|mention|mention_all|embed_link|markdown_link');
 
   late Delta delta;
 
@@ -176,7 +176,9 @@ class _DeltaVisitor implements ast.NodeVisitor {
 
   @override
   void visitElementAfter(ast.Element element) {
-    if (element.tag == 'li' && (previousToplevelElement.tag == 'ol' || previousToplevelElement.tag == 'ul')) {
+    if (element.tag == 'li' &&
+        (previousToplevelElement.tag == 'ol' ||
+            previousToplevelElement.tag == 'ul')) {
       delta.insert('\n', activeBlockAttribute?.toJson());
     }
 
@@ -252,6 +254,9 @@ class _DeltaVisitor implements ast.NodeVisitor {
       case 'embed_link':
         final href = el.attributes['name'];
         return EmbedLinkAttribute(href);
+      case 'markdown_link':
+        final href = el.attributes['name'];
+        return MarkdownLinkAttribute(href);
       case 'hr':
         return DividerAttribute();
     }
@@ -283,4 +288,9 @@ class DividerAttribute extends Attribute<String?> {
 class EmbedLinkAttribute extends Attribute<String?> {
   EmbedLinkAttribute(String? val)
       : super(Tags.embedLink.value, AttributeScope.embeds, val);
+}
+
+class MarkdownLinkAttribute extends Attribute<String?> {
+  MarkdownLinkAttribute(String? val)
+      : super(Tags.markdownLink.value, AttributeScope.embeds, val);
 }

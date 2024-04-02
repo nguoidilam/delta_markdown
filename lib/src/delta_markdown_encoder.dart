@@ -217,7 +217,7 @@ class DeltaMarkdownEncoder extends Converter<String, String> {
     } else if (attribute.key == Attribute.underline.key) {
       buffer.write('++');
     } else if (attribute.key == Attribute.link.key) {
-      // buffer.write(!close ? '[' : '](${attribute.value})');
+      buffer.write(!close ? '[' : '](${attribute.value})');
     } else if (attribute == Attribute.codeBlock) {
       buffer.write(!close ? '```\n' : '\n```');
     } else {

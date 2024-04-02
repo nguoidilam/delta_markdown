@@ -36,6 +36,7 @@ class InlineParser {
       ..addAll(_defaultSyntaxes)
       // Custom link resolvers go after the generic text syntax.
       ..insertAll(1, [
+        MarkdownLinkSyntax(),
         EmbeddedLinkSyntax(),
         LinkSyntax(linkResolver: document.linkResolver),
         ImageSyntax(linkResolver: document.imageLinkResolver)
@@ -300,11 +301,9 @@ class AutolinkExtensionSyntax extends InlineSyntax {
   // underscores may be present in the last two segments of the domain.
   static const domainPart = r'\w\-';
   static const domain = '[$domainPart][$domainPart.]+';
-
   // A valid domain consists of alphanumeric characters, underscores (_),
   // hyphens (-) and periods (.).
   static const path = r'[^\s<]*';
-
   // Trailing punctuation (specifically, ?, !, ., ,, :, *, _, and ~) will not
   // be considered part of the autolink
   static const truncatingPunctuationPositive = r'[?!.,:*_~]';
@@ -419,7 +418,6 @@ class _DelimiterRun {
       this.isFollowedByPunctuation});
 
   static const String punctuation = r'''!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~''';
-
   // TODO(srawlins): Unicode whitespace
   static const String whitespace = ' \t\r\n';
 
@@ -1316,9 +1314,7 @@ class ImageCustomerSyntax extends InlineSyntax {
 
 class MentionSyntax extends InlineSyntax {
   /// Create a new instance.
-  MentionSyntax({String? sub})
-      : substitute = sub,
-        super(RegexValue.regexMention);
+  MentionSyntax({String? sub}): substitute = sub, super(RegexValue.regexMention);
 
   final String? substitute;
 
@@ -1392,3 +1388,31 @@ class EmbeddedLinkSyntax extends InlineSyntax {
     return true;
   }
 }
+
+class MarkdownLinkSyntax extends InlineSyntax {
+  MarkdownLinkSyntax()
+      : super(RegexValue.regexMarkdownLink);
+
+  @override
+  bool onMatch(InlineParser parser, Match match) {
+    final el = Element.withTag('markdown_link');
+    final name = _tryDecodeInput(match.group(1) ?? '');
+    final link = _tryDecodeInput(match.group(2) ?? '');
+
+    el.attributes['name'] = name.isEmpty ? link : name;
+    el.attributes['link'] = link;
+    el.attributes['input'] = parser.source;
+    el.attributes['match'] = match.group(0) ?? '';
+    parser.addNode(el);
+    return true;
+  }
+
+  String _tryDecodeInput(String input) {
+    try {
+      return Uri.decodeComponent(input);
+    }  catch (e) {
+      return input;
+    }
+  }
+}
+
