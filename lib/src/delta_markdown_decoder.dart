@@ -2,8 +2,7 @@ import 'dart:collection';
 import 'dart:convert';
 
 import 'package:delta_markdown/src/tags.dart';
-import 'package:flutter_quill/flutter_quill.dart'
-    show Attribute, AttributeScope, Delta, LinkAttribute;
+import 'package:flutter_quill/flutter_quill.dart' show Attribute, AttributeScope, Delta, LinkAttribute;
 
 import 'ast.dart' as ast;
 import 'document.dart';
@@ -20,10 +19,9 @@ class DeltaMarkdownDecoder extends Converter<String, String> {
 }
 
 class _DeltaVisitor implements ast.NodeVisitor {
-  static final _blockTags =
-      RegExp('h1|h2|h3|h4|h5|h6|hr|pre|ul|ol|blockquote|p|pre');
+  static final _blockTags = RegExp('h1|h2|h3|h4|h5|h6|hr|pre|ul|ol|blockquote|p|pre');
 
-  static final _embedTags = RegExp('hr|img|file|mention|mention_all');
+  static final _embedTags = RegExp('hr|img|file|mention|mention_all|embed_link');
 
   late Delta delta;
 
@@ -178,9 +176,7 @@ class _DeltaVisitor implements ast.NodeVisitor {
 
   @override
   void visitElementAfter(ast.Element element) {
-    if (element.tag == 'li' &&
-        (previousToplevelElement.tag == 'ol' ||
-            previousToplevelElement.tag == 'ul')) {
+    if (element.tag == 'li' && (previousToplevelElement.tag == 'ol' || previousToplevelElement.tag == 'ul')) {
       delta.insert('\n', activeBlockAttribute?.toJson());
     }
 
@@ -253,6 +249,9 @@ class _DeltaVisitor implements ast.NodeVisitor {
       case 'mention_all':
         final href = el.attributes['value'];
         return MentionAllAttribute(href);
+      case 'embed_link':
+        final href = el.attributes['name'];
+        return EmbedLinkAttribute(href);
       case 'hr':
         return DividerAttribute();
     }
@@ -262,21 +261,26 @@ class _DeltaVisitor implements ast.NodeVisitor {
 }
 
 class ImageAttribute extends Attribute<String?> {
-  ImageAttribute(String? val) : super(Tags.img.value, AttributeScope.EMBEDS, val);
+  ImageAttribute(String? val) : super(Tags.img.value, AttributeScope.embeds, val);
 }
 
 class FileAttribute extends Attribute<String?> {
-  FileAttribute(String? val) : super(Tags.file.value, AttributeScope.EMBEDS, val);
+  FileAttribute(String? val) : super(Tags.file.value, AttributeScope.embeds, val);
 }
 
 class MentionAttribute extends Attribute<String?> {
-  MentionAttribute(String? val) : super(Tags.mention.value, AttributeScope.EMBEDS, val);
+  MentionAttribute(String? val) : super(Tags.mention.value, AttributeScope.embeds, val);
 }
 
 class MentionAllAttribute extends Attribute<String?> {
-  MentionAllAttribute(String? val) : super(Tags.mentionAll.value, AttributeScope.EMBEDS, val);
+  MentionAllAttribute(String? val) : super(Tags.mentionAll.value, AttributeScope.embeds, val);
 }
 
 class DividerAttribute extends Attribute<String?> {
-  DividerAttribute() : super(Tags.divider.value, AttributeScope.EMBEDS, 'hr');
+  DividerAttribute() : super(Tags.divider.value, AttributeScope.embeds, 'hr');
+}
+
+class EmbedLinkAttribute extends Attribute<String?> {
+  EmbedLinkAttribute(String? val)
+      : super(Tags.embedLink.value, AttributeScope.embeds, val);
 }

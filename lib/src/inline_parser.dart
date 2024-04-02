@@ -36,6 +36,7 @@ class InlineParser {
       ..addAll(_defaultSyntaxes)
       // Custom link resolvers go after the generic text syntax.
       ..insertAll(1, [
+        EmbeddedLinkSyntax(),
         LinkSyntax(linkResolver: document.linkResolver),
         ImageSyntax(linkResolver: document.imageLinkResolver)
       ]);
@@ -299,9 +300,11 @@ class AutolinkExtensionSyntax extends InlineSyntax {
   // underscores may be present in the last two segments of the domain.
   static const domainPart = r'\w\-';
   static const domain = '[$domainPart][$domainPart.]+';
+
   // A valid domain consists of alphanumeric characters, underscores (_),
   // hyphens (-) and periods (.).
   static const path = r'[^\s<]*';
+
   // Trailing punctuation (specifically, ?, !, ., ,, :, *, _, and ~) will not
   // be considered part of the autolink
   static const truncatingPunctuationPositive = r'[?!.,:*_~]';
@@ -416,6 +419,7 @@ class _DelimiterRun {
       this.isFollowedByPunctuation});
 
   static const String punctuation = r'''!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~''';
+
   // TODO(srawlins): Unicode whitespace
   static const String whitespace = ' \t\r\n';
 
@@ -1312,7 +1316,9 @@ class ImageCustomerSyntax extends InlineSyntax {
 
 class MentionSyntax extends InlineSyntax {
   /// Create a new instance.
-  MentionSyntax({String? sub}): substitute = sub, super(RegexValue.regexMention);
+  MentionSyntax({String? sub})
+      : substitute = sub,
+        super(RegexValue.regexMention);
 
   final String? substitute;
 
@@ -1351,6 +1357,37 @@ class FileSyntax extends InlineSyntax {
   bool onMatch(InlineParser parser, Match match) {
     final Element el = Element.withTag('file');
     el.attributes['value'] = match.group(0) ?? '';
+    parser.addNode(el);
+    return true;
+  }
+}
+
+class EmbeddedLinkSyntax extends InlineSyntax {
+  /// Create a new instance.
+  EmbeddedLinkSyntax({String? sub})
+      : substitute = sub,
+        super(RegexValue.embedLink);
+
+  final String? substitute;
+
+  @override
+  bool onMatch(InlineParser parser, Match match) {
+    final Element el = Element.withTag('embed_link');
+    String name;
+    String link;
+    try {
+      name = Uri.decodeComponent(match.group(3) ?? '');
+    } catch (err) {
+      name = match.group(3) ?? '';
+    }
+    try {
+      link = Uri.decodeComponent(match.group(2) ?? "");
+    } catch (err) {
+      link = match.group(2) ?? "";
+    }
+    el.attributes['name'] = name;
+    el.attributes['link'] = link;
+    el.attributes['input'] = parser.source;
     parser.addNode(el);
     return true;
   }
