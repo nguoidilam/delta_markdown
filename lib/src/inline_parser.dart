@@ -37,6 +37,7 @@ class InlineParser {
       // Custom link resolvers go after the generic text syntax.
       ..insertAll(1, [
         MarkdownLinkSyntax(),
+        EmbeddedLinkSyntax(),
         LinkSyntax(linkResolver: document.linkResolver),
         ImageSyntax(linkResolver: document.imageLinkResolver)
       ]);
@@ -1357,6 +1358,37 @@ class FileSyntax extends InlineSyntax {
   }
 }
 
+class EmbeddedLinkSyntax extends InlineSyntax {
+  /// Create a new instance.
+  EmbeddedLinkSyntax({String? sub})
+      : substitute = sub,
+        super(RegexValue.embedLink);
+
+  final String? substitute;
+
+  @override
+  bool onMatch(InlineParser parser, Match match) {
+    final Element el = Element.withTag('embed_link');
+    String name;
+    String link;
+    try {
+      name = Uri.decodeComponent(match.group(3) ?? '');
+    } catch (err) {
+      name = match.group(3) ?? '';
+    }
+    try {
+      link = Uri.decodeComponent(match.group(2) ?? "");
+    } catch (err) {
+      link = match.group(2) ?? "";
+    }
+    el.attributes['name'] = name;
+    el.attributes['link'] = link;
+    el.attributes['input'] = parser.source;
+    parser.addNode(el);
+    return true;
+  }
+}
+
 class MarkdownLinkSyntax extends InlineSyntax {
   MarkdownLinkSyntax()
       : super(RegexValue.regexMarkdownLink);
@@ -1383,3 +1415,4 @@ class MarkdownLinkSyntax extends InlineSyntax {
     }
   }
 }
+
