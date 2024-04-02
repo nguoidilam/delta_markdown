@@ -255,7 +255,7 @@ class _DeltaVisitor implements ast.NodeVisitor {
         final href = el.attributes['value'];
         return MentionAllAttribute(href);
       case 'markdown_link':
-        final href = el.attributes['value'];
+        final href = el.attributes['name'];
         return MarkdownLinkAttribute(href);
       case 'hr':
         return DividerAttribute();

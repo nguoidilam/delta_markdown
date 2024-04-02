@@ -36,6 +36,7 @@ class InlineParser {
       ..addAll(_defaultSyntaxes)
       // Custom link resolvers go after the generic text syntax.
       ..insertAll(1, [
+        MarkdownLinkSyntax(),
         LinkSyntax(linkResolver: document.linkResolver),
         ImageSyntax(linkResolver: document.imageLinkResolver)
       ]);
@@ -52,7 +53,6 @@ class InlineParser {
     FileSyntax(),
     MentionSyntax(),
     MentionAllSyntax(),
-    MarkdownLinkSyntax(),
     UnderlineSyntax(),
     AutolinkExtensionSyntax(),
     // Allow any punctuation to be escaped.
