@@ -266,23 +266,23 @@ class _DeltaVisitor implements ast.NodeVisitor {
 }
 
 class ImageAttribute extends Attribute<String?> {
-  ImageAttribute(String? val) : super(Tags.img.value, AttributeScope.EMBEDS, val);
+  ImageAttribute(String? val) : super(Tags.img.value, AttributeScope.embeds, val);
 }
 
 class FileAttribute extends Attribute<String?> {
-  FileAttribute(String? val) : super(Tags.file.value, AttributeScope.EMBEDS, val);
+  FileAttribute(String? val) : super(Tags.file.value, AttributeScope.embeds, val);
 }
 
 class MentionAttribute extends Attribute<String?> {
-  MentionAttribute(String? val) : super(Tags.mention.value, AttributeScope.EMBEDS, val);
+  MentionAttribute(String? val) : super(Tags.mention.value, AttributeScope.embeds, val);
 }
 
 class MentionAllAttribute extends Attribute<String?> {
-  MentionAllAttribute(String? val) : super(Tags.mentionAll.value, AttributeScope.EMBEDS, val);
+  MentionAllAttribute(String? val) : super(Tags.mentionAll.value, AttributeScope.embeds, val);
 }
 
 class DividerAttribute extends Attribute<String?> {
-  DividerAttribute() : super(Tags.divider.value, AttributeScope.EMBEDS, 'hr');
+  DividerAttribute() : super(Tags.divider.value, AttributeScope.embeds, 'hr');
 }
 
 class MarkdownLinkAttribute extends Attribute<String?> {

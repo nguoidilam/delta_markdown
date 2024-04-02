@@ -67,7 +67,7 @@ class DeltaMarkdownEncoder extends Converter<String, String> {
     for (final value
         in currentInlineStyle.attributes.values.toList().reversed) {
       // TODO(tillf): Is block correct?
-      if (value.scope == AttributeScope.BLOCK) {
+      if (value.scope == AttributeScope.block) {
         continue;
       }
       if (style.containsKey(value.key)) {
@@ -90,7 +90,7 @@ class DeltaMarkdownEncoder extends Converter<String, String> {
     // Now open any new styles.
     for (final attribute in style.attributes.values) {
       // TODO(tillf): Is block correct?
-      if (attribute.scope == AttributeScope.BLOCK) {
+      if (attribute.scope == AttributeScope.block) {
         continue;
       }
       if (currentInlineStyle.containsKey(attribute.key)) {
@@ -125,7 +125,7 @@ class DeltaMarkdownEncoder extends Converter<String, String> {
         final lineBlock = Style.fromJson(attributes)
             .attributes
             .values
-            .singleWhereOrNull((a) => a.scope == AttributeScope.BLOCK);
+            .singleWhereOrNull((a) => a.scope == AttributeScope.block);
 
         if (lineBlock == currentBlockStyle) {
           currentBlockLines.add(lineBuffer.toString());
