@@ -16,6 +16,8 @@ class DeltaMarkdownEncoder extends Converter<String, String> {
 
   late List<String> currentBlockLines;
 
+  int _currentIndentLevel = 0;
+
   /// Converts the [input] delta to Markdown.
   @override
   String convert(String input) {
@@ -49,7 +51,7 @@ class DeltaMarkdownEncoder extends Converter<String, String> {
       }
     }
 
-    _handleBlock(currentBlockStyle); // Close the last block
+    _handleBlock(currentBlockStyle, _currentIndentLevel); // Close the last block
 
     return markdownBuffer.toString();
   }
@@ -121,18 +123,20 @@ class DeltaMarkdownEncoder extends Converter<String, String> {
         // Close any open inline styles.
         _handleInline(lineBuffer, '', null);
 
-        final lineBlock =
-            Style.fromJson(attributes).attributes.values.singleWhereOrNull((a) => a.scope == AttributeScope.block);
+        var attributeValues = Style.fromJson(attributes).attributes.values;
+        final lineBlock = attributeValues.firstWhereOrNull((a) => a.scope == AttributeScope.block);
+        final indentLevel = attributeValues.firstWhereOrNull((a) => a.key == Attribute.indent.key)?.value ?? 0;
 
-        if (lineBlock == currentBlockStyle) {
+        if (lineBlock == currentBlockStyle && indentLevel == _currentIndentLevel) {
           currentBlockLines.add(lineBuffer.toString());
         } else {
-          _handleBlock(currentBlockStyle);
+          _handleBlock(currentBlockStyle, _currentIndentLevel);
           currentBlockLines
             ..clear()
             ..add(lineBuffer.toString());
 
           currentBlockStyle = lineBlock;
+          _currentIndentLevel = indentLevel;
         }
         lineBuffer.clear();
 
@@ -159,7 +163,7 @@ class DeltaMarkdownEncoder extends Converter<String, String> {
     _writeEmbedTag(lineBuffer, embed);
   }
 
-  void _handleBlock(Attribute? blockStyle) {
+  void _handleBlock(Attribute? blockStyle, int indentLevel) {
     if (currentBlockLines.isEmpty) {
       return; // Empty block
     }
@@ -181,7 +185,7 @@ class DeltaMarkdownEncoder extends Converter<String, String> {
     } else {
       // Dealing with lists or a quote.
       for (final line in currentBlockLines) {
-        _writeBlockTag(markdownBuffer, blockStyle);
+        _writeBlockTag(markdownBuffer, blockStyle, indentLevel);
         markdownBuffer
           ..write(line)
           ..writeln();
@@ -228,7 +232,8 @@ class DeltaMarkdownEncoder extends Converter<String, String> {
 
   void _writeBlockTag(
     StringBuffer buffer,
-    Attribute block, {
+    Attribute block,
+    int indentLevel, {
     bool close = false,
   }) {
     if (close) {
@@ -238,9 +243,13 @@ class DeltaMarkdownEncoder extends Converter<String, String> {
     if (block == Attribute.blockQuote) {
       buffer.write('> ');
     } else if (block == Attribute.ul) {
-      buffer.write('* ');
+      buffer
+        ..write('    ' * indentLevel)
+        ..write('* ');
     } else if (block == Attribute.ol) {
-      buffer.write('1. ');
+      buffer
+        ..write('    ' * indentLevel)
+        ..write('1. ');
     } else if (block.key == Attribute.h1.key && block.value == 1) {
       buffer.write('# ');
     } else if (block.key == Attribute.h2.key && block.value == 2) {
