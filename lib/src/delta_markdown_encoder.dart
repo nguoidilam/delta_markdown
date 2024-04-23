@@ -51,8 +51,7 @@ class DeltaMarkdownEncoder extends Converter<String, String> {
       }
     }
 
-    _handleBlock(
-        currentBlockStyle, _currentIndentLevel); // Close the last block
+    _handleBlock(currentBlockStyle, _currentIndentLevel); // Close the last block
 
     return markdownBuffer.toString();
   }
@@ -67,8 +66,7 @@ class DeltaMarkdownEncoder extends Converter<String, String> {
     // First close any current styles if needed
     final markedForRemoval = <Attribute>[];
     // Close the styles in reverse order, e.g. **_ for _**Test**_.
-    for (final value
-        in currentInlineStyle.attributes.values.toList().reversed) {
+    for (final value in currentInlineStyle.attributes.values.toList().reversed) {
       // TODO(tillf): Is block correct?
       if (value.scope == AttributeScope.block) {
         continue;
@@ -125,16 +123,12 @@ class DeltaMarkdownEncoder extends Converter<String, String> {
         // Close any open inline styles.
         _handleInline(lineBuffer, '', null);
 
-        final attributeValues = Style.fromJson(attributes).attributes.values;
+        var attributeValues = Style.fromJson(attributes).attributes.values;
         final lineBlock = attributeValues.firstWhereOrNull((a) =>
-            a.scope == AttributeScope.block && a.key != Attribute.indent.key);
-        final indentLevel = attributeValues
-                .firstWhereOrNull((a) => a.key == Attribute.indent.key)
-                ?.value ??
-            0;
+                            a.scope == AttributeScope.block && a.key != Attribute.indent.key);
+        final indentLevel = attributeValues.firstWhereOrNull((a) => a.key == Attribute.indent.key)?.value ?? 0;
 
-        if (lineBlock == currentBlockStyle &&
-            indentLevel == _currentIndentLevel) {
+        if (lineBlock == currentBlockStyle && indentLevel == _currentIndentLevel) {
           currentBlockLines.add(lineBuffer.toString());
         } else {
           _handleBlock(currentBlockStyle, _currentIndentLevel);
