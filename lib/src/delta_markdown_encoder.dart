@@ -124,7 +124,8 @@ class DeltaMarkdownEncoder extends Converter<String, String> {
         _handleInline(lineBuffer, '', null);
 
         var attributeValues = Style.fromJson(attributes).attributes.values;
-        final lineBlock = attributeValues.firstWhereOrNull((a) => a.scope == AttributeScope.block);
+        final lineBlock = attributeValues.firstWhereOrNull((a) =>
+                            a.scope == AttributeScope.block && a.key != Attribute.indent.key);
         final indentLevel = attributeValues.firstWhereOrNull((a) => a.key == Attribute.indent.key)?.value ?? 0;
 
         if (lineBlock == currentBlockStyle && indentLevel == _currentIndentLevel) {
